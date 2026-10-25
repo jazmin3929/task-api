@@ -63,4 +63,84 @@ router.delete("/tareas/:id", async (req, res) => {
     
 
 }); 
+
+ // PUT /tareas/:id/completar
+router.put("/tareas/:id/completar", async (req, res) => {
+    try {
+        const tarea = await ModeloTarea.findById(req.params.id);
+
+        if (!tarea) {
+            return res.status(404).send({
+                message: "Tarea no encontrada"
+            });
+        }
+
+        tarea.completada = true;
+        await tarea.save();
+
+        res.status(200).send(tarea);
+    } catch (error) {
+        res.status(500).send({
+            message: "Error al completar la tarea",
+            error
+        });
+    }
+});
+
+ // GET /tareas/prioridad/:nivel
+router.get("/tareas/prioridad/:nivel", async (req, res) => {
+    try {
+        const nivel = req.params.nivel;
+        const prioridadesValidas = ["alta", "media", "baja"];
+
+        if (!prioridadesValidas.includes(nivel)) {
+            return res.status(400).send({
+                message: "Prioridad inválida. Usá alta, media o baja"
+            });
+        }
+
+        const tareas = await ModeloTarea.find({
+            prioridad: nivel
+        });
+
+        res.status(200).send(tareas);
+    } catch (error) {
+        res.status(500).send({
+            message: "Error al buscar tareas por prioridad",
+            error
+        });
+    }
+});
+
+ // GET /tareas/proximas-vencer/:dias
+router.get("/tareas/proximas-vencer/:dias", async (req, res) => {
+    try {
+        const dias = Number(req.params.dias);
+
+        if (!Number.isInteger(dias) || dias <= 0) {
+            return res.status(400).send({
+                message: "Ingresá una cantidad de días válida"
+            });
+        }
+
+        const desde = new Date();
+        const hasta = new Date();
+        hasta.setDate(hasta.getDate() + dias);
+
+        const tareas = await ModeloTarea.find({
+            completada: false,
+            fechaLimite: {
+                $gte: desde,
+                $lte: hasta
+            }
+        });
+
+        res.status(200).send(tareas);
+    } catch (error) {
+        res.status(500).send({
+            message: "Error al buscar tareas próximas a vencer",
+            error
+        });
+    }
+});
 module.exports = router;
