@@ -1,7 +1,15 @@
 const express = require("express");
+const cors = require("cors");
 const app = express();
 const dbconnect = require("./config/db");  //importar la funcion de conexion a la base de datos");
 const tareasRoutes = require("./routes/tareas"); //importar las rutas de tareas
+
+app.use(cors({
+    origin: [
+        "http://localhost:5173",
+        "http://localhost:5174",
+    ],
+}));
 
 app.use(express.json()); //middleware para parsear el body de las peticiones
 app.use(tareasRoutes); //usar las rutas de tareas
